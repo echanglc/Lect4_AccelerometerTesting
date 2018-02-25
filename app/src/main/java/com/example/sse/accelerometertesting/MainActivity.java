@@ -15,6 +15,8 @@ import android.hardware.SensorManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.widget.SeekBar;
 import android.widget.Toast;
 import android.webkit.WebView;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private float lastAcceleration;
 
     private SeekBar seekBar;
+
 
     // value used to determine whether user shook the device "significantly"
     private static int SIGNIFICANT_SHAKE = 10000;   //tweak this as necessary
@@ -43,11 +46,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 //
-   //     setHasOptionsMenu(true);   //this lets the compiler know there are menu items
+        //     setHasOptionsMenu(true);   //this lets the compiler know there are menu items
 
         seekBar = (SeekBar)findViewById(R.id.seekBar);
-
-
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -141,36 +142,38 @@ public class MainActivity extends AppCompatActivity {
             acceleration = currentAcceleration *  (currentAcceleration - lastAcceleration);
 
             // if the acceleration is above a certain threshold
-                if (acceleration > SIGNIFICANT_SHAKE) {
-                    Log.e(TAG, "delta x = " + (x-lastX));
-                    Log.e(TAG, "delta y = " + (y-lastY));
-                    Log.e(TAG, "delta z = " + (z-lastZ));
+            if (acceleration > SIGNIFICANT_SHAKE) {
+
+                float deltaX = Math.abs(x-lastX);
+                float deltaY = Math.abs(y-lastY);
+                float deltaZ = Math.abs(z-lastZ);
+                float maxDelta = Math.max(deltaX,deltaY);
+                if (maxDelta > deltaZ) {
+                    if (maxDelta == deltaX) {
+                        Uri uri = Uri.parse("http://google.com");
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
+                    } else if (maxDelta == deltaY) {
+                        Uri uri2 = Uri.parse("http://yahoo.com");
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri2);
+                        startActivity(intent);
+                    }
+                }else{
+                    Uri uri3 = Uri.parse("http://bing.com");
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri3);
+                    startActivity(intent);
                 }
+                Log.e(TAG, "absolute delta x = " + deltaX);
+                Log.e(TAG, "absolute delta y = " + deltaY);
+                Log.e(TAG, "absolute delta z = " + deltaZ);
+
+            }
 
             lastX = x;
             lastY = y;
             lastZ = z;
-                if (x>y && x>z){
-                    Uri uri = Uri.parse("http://google.com");
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    startActivity(intent);
-            }
-                if(y>x && y>z){
-                    Uri uri2 = Uri.parse("http://yahoo.com");
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri2);
-                    startActivity(intent);
-            }
-                if(z>x && z>y){
-                    Uri uri3 = Uri.parse("http://bing.com");
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri3);
-                    startActivity(intent);
-            }
-                else{
-                    Uri uri4 = Uri.parse("https://jumpingjaxfitness.files.wordpress.com/2010/07/dizziness.jpg");
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri4);
-                    startActivity(intent);
-            }
-}
+
+        }
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-//MENU STUFF, SAVE FOR NEXT WEEK
+    //MENU STUFF, SAVE FOR NEXT WEEK
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
